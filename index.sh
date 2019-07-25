@@ -15,28 +15,26 @@ file="pass-to-1password$now.csv"
 
 echo "thank you for using pass-to-1password. hold tight!"
 
-passwords=$(find $passDir -type f -name "*.gpg")
+passwordList=$(find $passDir -type f -name "*.gpg")
 regex="^${passDir}/(.+)\.gpg$"
-for pass in $passwords
+for pass in $passwordList
 do
   if [[ $pass =~ $regex ]]
   then
-    title="${BASH_REMATCH[1]}"
-    website=""
-    username=""
-    password=""
-    notes=""
+    title="${BASH_REMATCH[1]}" # this is the cleaned-up pathname to the gpg file
+    website="" # not used
+    username="" # not used
+    password="" # set below
+    notes="" # a catch all field for any other data in the file
 
-    # unlock pass, read contents, write them to the csv file
     while read a b
     do
-      password="$a"
-      notes="$b"
-    done <<<$(pass $title)
+      password="$a" # password is always the first line of the file
+      notes="$b" # notes will catch everything else
+    done <<<$(pass $title) # call `pass` with the cleaned up password title (path to file)
 
-    # `title,website,username,password,notes,custom field 1/n...`
     row="\"$title\",\"$website\",\"$username\",\"$password\",\"$notes\""
-    echo $row >> "$file"
+    echo $row >> "$file" # write the row to the CSV file
   fi
 done
 
